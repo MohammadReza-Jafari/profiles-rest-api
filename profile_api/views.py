@@ -1,11 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from .serializers import HelloSerializer
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+
+from profile_api import serializers, models, permissions
 
 
 class HelloApiView(APIView):
-    serializer_class = HelloSerializer
+    serializer_class = serializers.HelloSerializer
 
     def get(self, request, format=None):
         names = [
@@ -22,7 +24,7 @@ class HelloApiView(APIView):
     def post(self, request):
         ser = self.serializer_class(data=request.data)
         if ser.is_valid():
-            name = ser.validated_data.get('name')
+            name = ser.validated_data['name']
             message = f'Hello, {name}'
             return Response({'message': message}, status=status.HTTP_200_OK)
         else:
@@ -42,7 +44,7 @@ class HelloApiView(APIView):
 
 
 class HelloViewSet(viewsets.ViewSet):
-    serializer_class = HelloSerializer
+    serializer_class = serializers.HelloSerializer
 
     def list(self, request):
         return Response({'message': 'hello view set'})
@@ -50,7 +52,7 @@ class HelloViewSet(viewsets.ViewSet):
     def create(self, request):
         ser = self.serializer_class(data=request.data)
         if ser.is_valid():
-            name = ser.validated_data.get('name')
+            name = ser.validated_data['name']
             message = f'name = {name}'
             return Response({'message': message}, status=status.HTTP_201_CREATED)
         else:
@@ -67,3 +69,11 @@ class HelloViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         return Response({'message': 'destroy'})
+
+
+class UserProfileViewSet(viewsets.ModelViewSet):
+    """Handle Creating and Updating a UserProfile"""
+    serializer_class = serializers.UserProfileSerializer
+    queryset = models.UserProfile.objects.all()
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (permissions.UpdateOwnProfile,)
