@@ -10,3 +10,12 @@ class UpdateOwnProfile(permissions.BasePermission):
         if request.user.is_superuser:
             return True
         return request.user == obj
+
+
+class UpdateOwnFeed(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if request.user.is_superuser :
+            return True
+        return request.user == obj.user_profile
